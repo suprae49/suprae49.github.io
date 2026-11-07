@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/app_logo" android:layout_width="80.0dp" android:layout_height="80.0dp" android:layout_marginTop="30.0dp" android:src="@mipmap/ic_sidebar_logo" android:layout_centerHorizontal="true" android:contentDescription="@string/app_logo" />
+    <TextView android:textSize="22.0sp" android:textColor="@color/sidebarForeground" android:id="@id/app_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dp" android:layout_marginBottom="15.0dp" android:layout_below="@id/app_logo" android:layout_centerHorizontal="true" android:fontFamily="sans-serif-medium" />
+    <View android:id="@id/header_divider" android:background="@color/sidebarSeparatorColor" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_below="@id/app_name" />
+</RelativeLayout>

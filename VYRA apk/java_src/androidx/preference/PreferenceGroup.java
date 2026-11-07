@@ -1,0 +1,32 @@
+package androidx.preference;
+
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.TextUtils;
+import android.util.AttributeSet;
+import android.util.Log;
+import com.google.android.gms.common.api.Api;
+import h1.a;
+import java.util.ArrayList;
+
+/* JADX INFO: compiled from: r8-map-id-aefec9452575bf3ce628382b7406055789804c2b29c30cc55857652ccdc8c5e1 */
+/* JADX INFO: loaded from: classes.dex */
+public abstract class PreferenceGroup extends Preference {
+    public PreferenceGroup(Context context, AttributeSet attributeSet, int i4, int i5) {
+        super(context, attributeSet, i4);
+        new Handler(Looper.getMainLooper());
+        new ArrayList();
+        TypedArray typedArrayObtainStyledAttributes = context.obtainStyledAttributes(attributeSet, a.f2162g, i4, 0);
+        typedArrayObtainStyledAttributes.getBoolean(2, typedArrayObtainStyledAttributes.getBoolean(2, true));
+        if (typedArrayObtainStyledAttributes.hasValue(1) && typedArrayObtainStyledAttributes.getInt(1, typedArrayObtainStyledAttributes.getInt(1, Api.BaseClientBuilder.API_PRIORITY_OTHER)) != Integer.MAX_VALUE && TextUtils.isEmpty(this.f890j)) {
+            Log.e("PreferenceGroup", getClass().getSimpleName().concat(" should have a key defined if it contains an expandable preference"));
+        }
+        typedArrayObtainStyledAttributes.recycle();
+    }
+
+    public PreferenceGroup(Context context, AttributeSet attributeSet) {
+        this(context, attributeSet, 0, 0);
+    }
+}

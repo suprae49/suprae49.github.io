@@ -1,0 +1,11 @@
+.class public interface abstract Lz3/c;
+.super Ljava/lang/Object;
+.source "r8-map-id-aefec9452575bf3ce628382b7406055789804c2b29c30cc55857652ccdc8c5e1"
+
+# interfaces
+.implements Lz3/r;
+
+
+# virtual methods
+.method public abstract c(Ljava/lang/Throwable;)Z
+.end method

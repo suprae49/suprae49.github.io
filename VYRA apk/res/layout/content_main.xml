@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent" app:layout_behavior="@string/appbar_scrolling_view_behavior"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <co.median.android.MySwipeRefreshLayout android:id="@id/swipe_refresh" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_above="@id/pluginView">
+        <co.median.android.widget.SwipeHistoryNavigationLayout android:id="@id/swipe_history_nav" android:layout_width="match_parent" android:layout_height="match_parent">
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                <co.median.android.widget.WebViewContainerView android:id="@id/webviewContainer" android:layout_width="match_parent" android:layout_height="match_parent" />
+                <View android:id="@id/webviewOverlay" android:background="?android:colorBackground" android:layout_width="match_parent" android:layout_height="match_parent" android:alpha="0.0" />
+            </RelativeLayout>
+        </co.median.android.widget.SwipeHistoryNavigationLayout>
+    </co.median.android.MySwipeRefreshLayout>
+    <RelativeLayout android:id="@id/pluginView" android:background="?android:colorBackground" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_above="@id/bottom_nav_spacer" android:layout_alignWithParentIfMissing="true" />
+    <co.median.android.widget.MedianProgressView android:id="@id/progress" android:background="@android:color/transparent" android:visibility="invisible" android:layout_width="@dimen/progress_indicator_size" android:layout_height="@dimen/progress_indicator_size" android:layout_centerInParent="true" />
+    <RelativeLayout android:id="@id/fullscreen" android:background="?android:colorBackground" android:visibility="invisible" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_alignParentBottom="true" />
+    <View android:id="@id/bottom_nav_spacer" android:visibility="invisible" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_above="@id/top_nav_hide_on_scroll_spacer" />
+    <View android:id="@id/top_nav_hide_on_scroll_spacer" android:visibility="invisible" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_alignParentBottom="true" />
+</RelativeLayout>

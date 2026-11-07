@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="device_shaken_options">
+        <item>Supprimer le cache</item>
+        <item>Annuler</item>
+    </string-array>
+</resources>

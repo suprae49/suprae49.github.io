@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="horizontal" android:id="@id/menu_item" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textColor="?android:textColorPrimary" android:id="@id/menu_item_title" android:paddingTop="13.0dp" android:paddingBottom="13.0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true" android:fontFamily="sans-serif-medium" android:paddingStart="22.0dp" android:paddingEnd="22.0dp" />
+    <ImageView android:id="@id/menu_group_indicator" android:layout_width="@dimen/sidebar_expand_indicator_size" android:layout_height="@dimen/sidebar_expand_indicator_size" android:layout_centerVertical="true" android:paddingEnd="10.0dp" android:layout_alignParentEnd="true" />
+</RelativeLayout>
