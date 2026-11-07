@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string-array name="device_shaken_options">
-        <item>Видалити кеш</item>
-        <item>Скасувати</item>
-    </string-array>
-</resources>

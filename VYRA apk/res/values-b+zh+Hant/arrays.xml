@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string-array name="device_shaken_options">
-        <item>刪除快取</item>
-        <item>取消</item>
-    </string-array>
-</resources>
