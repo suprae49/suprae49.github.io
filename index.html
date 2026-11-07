@@ -1,0 +1,1961 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>VYRA — Code Studio</title>
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #12161b;
+    --line: #222a33;
+    --text: #d7dde4;
+    --muted: #7d8896;
+    --accent: #3ddc84;
+    --accent-text: #04140a;
+    --bad: #ff6b6b;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --line: #d5dbe2;
+      --text: #1b2229;
+      --muted: #5f6b78;
+      --accent: #12924a;
+      --accent-text: #ffffff;
+      --bad: #c62828;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+  }
+  h1 { font-size: 16px; margin: 0 12px 0 0; letter-spacing: 1px; }
+  h1 span { color: var(--accent); }
+  button {
+    font: inherit;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--muted); }
+  button.primary {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .spacer { flex: 1; }
+  #status { color: var(--muted); font-size: 13px; }
+  main {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  @media (max-width: 800px) {
+    main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  }
+  section {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border-right: 1px solid var(--line);
+  }
+  section:last-child { border-right: 0; }
+  .bar {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .bar .title { padding: 4px 0 8px; }
+  .tab {
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 4px 10px 8px;
+    color: var(--muted);
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  textarea, pre {
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    padding: 14px 16px;
+    width: 100%;
+    border: 0;
+    outline: 0;
+    resize: none;
+    overflow: auto;
+    background: var(--bg);
+    color: var(--text);
+    font: 13px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    tab-size: 4;
+    white-space: pre;
+  }
+  pre.error { color: var(--bad); }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .editorFrame { display:flex; flex:1; min-height:0; overflow:hidden; background:var(--bg); }
+  #lineNumbers { flex:none; width:48px; overflow:hidden; padding:14px 9px; margin:0; text-align:right; user-select:none; color:var(--muted); background:var(--panel); border-right:1px solid var(--line); font:13px/1.6 ui-monospace,"SF Mono",Menlo,Consolas,monospace; white-space:pre; }
+  #src { flex:1; min-width:0; height:100%; }
+  pre.hidden, input[type=file] { display: none; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  #status { max-width: 240px; overflow-wrap: anywhere; }
+  @media (max-width: 800px) {
+    header { gap: 6px; padding: 8px; }
+    header button { padding: 6px 8px; font-size: 12px; }
+    #status { max-width: 100%; }
+  }
+  #editorInfo{display:flex;justify-content:space-between;gap:12px;padding:5px 12px;border-top:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:11px}
+  #editorInfo span{white-space:nowrap}
+  button:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  @media (max-width:800px){main{grid-template-columns:1fr;grid-template-rows:minmax(360px,1fr) minmax(300px,1fr)}section{border-right:0;border-bottom:1px solid var(--line)}}
+
+#languageTools{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:12px}
+  .mobileQuickTools{display:none}
+#languageMode{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 7px}
+#completionHint{margin-left:auto;font-size:11px} section:first-child{position:relative}
+#completionPopup{position:absolute;z-index:20;left:12px;top:90px;width:min(420px,calc(100% - 24px));max-height:230px;overflow:auto;display:none;background:#202124;color:#e7e7e7;border:1px solid #454b52;border-radius:8px;box-shadow:0 8px 24px #0008;font:13px/1.5 ui-monospace,monospace}
+.completionItem{display:flex;gap:9px;align-items:center;padding:5px 9px;cursor:pointer}.completionItem.active,.completionItem:hover{background:#3a4149;outline:1px solid #5b9bd5}.completionIcon{color:#aab4be}.completionMain{flex:1}.completionDetail{color:#9da7b2;font-size:10px}
+
+
+  /* VYRA Code Studio responsive workspace */
+  [hidden] { display: none !important; }
+  .brandRow { display:flex; align-items:center; gap:10px; width:100%; min-width:0; }
+  .brandSubtitle { color:var(--muted); font-size:12px; letter-spacing:.04em; }
+  .toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:7px; width:100%; }
+  .toolbar button { white-space:nowrap; }
+  #status { margin-left:auto; }
+  .mobileViewBar { display:none; }
+  .findPanel { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:7px 10px; border-bottom:1px solid var(--line); background:var(--panel); }
+  .findPanel input { min-width:100px; width: min(25%, 190px); padding:7px 9px; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:6px; font:inherit; }
+  .findPanel button { padding:6px 9px; }
+  #findCount { color:var(--muted); font-size:11px; margin-left:auto; }
+  #completionPopup { top:118px; }
+  #src { line-height:1.65; }
+  #src.dragOver { outline:2px dashed var(--accent); outline-offset:-6px; background:color-mix(in srgb,var(--accent) 7%,var(--bg)); }
+  .tab:focus-visible, .mobileViewTab:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  @media (max-width: 800px) {
+    html, body { height:100%; height:100dvh; overflow:hidden; }
+    body { min-height:0; padding-bottom:env(safe-area-inset-bottom); }
+    header { display:flex; flex-direction:column; align-items:stretch; flex-wrap:nowrap; gap:7px; padding:8px max(10px,env(safe-area-inset-right)) 7px max(10px,env(safe-area-inset-left)); padding-top:max(8px,env(safe-area-inset-top)); }
+    .brandRow { min-height:28px; }
+    h1 { font-size:16px; margin:0; }
+    .toolbar { flex-wrap:nowrap; width:100%; overflow-x:auto; overflow-y:hidden; padding:1px 1px 5px; scrollbar-width:thin; -webkit-overflow-scrolling:touch; }
+    .toolbar button { flex:0 0 auto; min-height:42px; padding:7px 10px; font-size:12px; touch-action:manipulation; }
+    #status { font-size:11px; max-width:54vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .mobileViewBar { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:6px 10px; background:var(--panel); border-bottom:1px solid var(--line); }
+    .mobileViewTab { min-height:42px; border-radius:8px; font-weight:600; color:var(--muted); touch-action:manipulation; }
+    .mobileViewTab.active { color:var(--accent-text); border-color:var(--accent); background:var(--accent); }
+    main { display:block; flex:1; min-height:0; overflow:hidden; }
+    main > section { display:none; height:100%; min-height:0; border:0; }
+    main[data-mobile-view="editor"] > section:first-child,
+    main[data-mobile-view="output"] > section:last-child { display:flex; }
+    #languageTools { flex:none; padding:7px 10px; }
+    .mobileQuickTools { display:flex; flex:none; gap:6px; overflow-x:auto; padding:6px 9px; border-bottom:1px solid var(--line); background:var(--panel); scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+    .mobileQuickTools::-webkit-scrollbar { display:none; }
+    .mobileQuickTools button { flex:0 0 auto; min-height:36px; padding:6px 10px; border-radius:8px; font:12px ui-monospace,monospace; touch-action:manipulation; }
+    #languageMode { min-height:36px; max-width:48vw; }
+    #completionHint { max-width:55%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .editorFrame { min-height:0; }
+    #lineNumbers { width:39px; padding:12px 6px; font-size:12px; }
+    #src { padding:12px 11px; font-size:15px; line-height:1.55; tab-size:4; }
+    #editorInfo { padding:5px 9px; gap:7px; overflow:hidden; }
+    #editorInfo span { font-size:10px; }
+    #editorInfo span:last-child { display:none; }
+    .bar { flex:none; padding:7px 9px 0; }
+    .bar .tab { min-height:39px; }
+    #out, #cout { padding:12px; font-size:13px; white-space:pre-wrap; overflow-wrap:anywhere; }
+    #findPanel { flex:none; padding:7px; }
+    #findPanel input { flex:1 1 38%; width:auto; min-width:0; min-height:38px; font-size:14px; }
+    #findPanel button { min-height:38px; }
+    #findCount { width:100%; margin-left:0; }
+    #completionPopup { position:fixed; top:auto; bottom:calc(56px + env(safe-area-inset-bottom)); left:8px; width:calc(100vw - 16px); max-height:32vh; }
+  }
+  @media (max-width: 420px) {
+    .brandSubtitle { display:none; }
+    .toolbar button { padding:7px 8px; font-size:11px; }
+    #languageTools label { font-size:11px; }
+    #languageMode { font-size:12px; }
+    #editorInfo span:nth-child(2) { margin-left:auto; }
+  }
+  @media (min-width: 801px) {
+    body { min-height:100vh; }
+    main > section:first-child { min-width:0; }
+  }
+  :root[data-theme="dark"] { color-scheme:dark; --bg:#0b0d10; --panel:#12161b; --line:#222a33; --text:#d7dde4; --muted:#7d8896; --accent:#3ddc84; --accent-text:#04140a; --bad:#ff6b6b; }
+  :root[data-theme="light"] { color-scheme:light; --bg:#f4f6f8; --panel:#fff; --line:#d5dbe2; --text:#1b2229; --muted:#5f6b78; --accent:#12924a; --accent-text:#fff; --bad:#c62828; }
+  .mobileDock { display:none; }
+  .toolbar button[aria-pressed="true"] { border-color:var(--accent); color:var(--accent); }
+  #src, #lineNumbers { transition:font-size .12s ease; }
+  @media (max-width:800px) {
+    .mobileViewBar { display:none !important; }
+    body { padding-bottom:calc(68px + env(safe-area-inset-bottom)); }
+    .mobileDock { position:fixed; z-index:60; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--panel); background:color-mix(in srgb,var(--panel) 94%,transparent); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+    .mobileDock button { min-width:0; min-height:48px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; border:1px solid transparent; border-radius:9px; padding:3px 2px; color:var(--muted); background:transparent; touch-action:manipulation; }
+    .mobileDock button span { font-size:18px; line-height:1.1; }
+    .mobileDock button small { font-size:10px; line-height:1.2; }
+    .mobileDock button.active { color:var(--accent-text); border-color:var(--accent); background:var(--accent); font-weight:700; }
+    main { min-height:0; }
+  }
+  @media (max-width:380px) {
+    .mobileDock { gap:1px; padding-left:4px; padding-right:4px; }
+    .mobileDock button small { font-size:9px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto !important; transition:none !important; animation:none !important; } }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brandRow">
+    <h1>VY<span>RA</span></h1>
+    <span class="brandSubtitle">Code Studio</span>
+    <span class="spacer"></span>
+    <span id="status" role="status" aria-live="polite">Ready · Ctrl+Enter to run</span>
+  </div>
+  <div class="toolbar" role="toolbar" aria-label="Editor actions">
+    <button id="compileBtn" title="Compile VYRA to C">Compile to C</button>
+    <button id="runBtn" class="primary" title="Run (Ctrl+Enter)">&#9654; Run</button>
+    <button id="demoBtn" title="Load the selected language demo">Load demo</button>
+    <button id="resetBtn" title="Reset the current editor to its demo">Reset demo</button>
+    <button id="restoreBtn" hidden>Restore draft</button>
+    <button id="findBtn" title="Find and replace (Ctrl+F)">Find</button>
+    <button id="clearOutputBtn">Clear output</button>
+    <button id="openBtn">Open file</button>
+    <button id="saveBtn" title="Download source (Ctrl+S)">Download file</button>
+    <button id="copyBtn">Copy code</button>
+    <button id="exportBackupBtn" title="Export all language drafts and IDE preferences">Export backup</button>
+    <button id="importBackupBtn" title="Restore a VYRA IDE backup">Import backup</button>
+    <button id="downloadBtn">Download output.c</button>
+    <button id="themeBtn" title="Toggle color theme">Theme: Auto</button>
+    <button id="installBtn" type="button" hidden title="Install VYRA as an app">Install app</button>
+    <button id="fontDownBtn" type="button" title="Decrease editor text size" aria-label="Decrease editor text size">A−</button>
+    <button id="fontUpBtn" type="button" title="Increase editor text size" aria-label="Increase editor text size">A+</button>
+    <button id="wrapBtn" type="button" title="Toggle editor word wrap" aria-pressed="false">Wrap: Off</button>
+    <button id="howBtn" onclick="location.href='how-to.html'">How to use</button>
+  </div>
+  <input type="file" id="file" accept=".vy,.py,.c,.h,text/plain">
+  <input type="file" id="backupFile" accept=".json,application/json">
+</header>
+
+<div class="mobileViewBar" role="tablist" aria-label="Workspace view">
+  <button type="button" class="mobileViewTab active" id="mobileEditorBtn" role="tab" aria-selected="true">⌨ Editor</button>
+  <button type="button" class="mobileViewTab" id="mobileOutputBtn" role="tab" aria-selected="false">▤ Output</button>
+</div>
+
+<main data-mobile-view="editor">
+  <section>
+    <div class="bar"><span class="title" id="editorFileName">main.vy</span></div>
+    <div id="languageTools"><label for="languageMode">Language:</label><select id="languageMode"><option value="vyra">VYRA</option><option value="python">Python</option><option value="c">C</option></select><span id="completionHint">Suggestions · ↑ ↓ · Enter · Esc</span></div>
+    <div id="mobileQuickTools" class="mobileQuickTools" aria-label="Quick code insertions"></div>
+    <div id="findPanel" class="findPanel" hidden>
+      <input id="findQuery" type="search" placeholder="Find in code" aria-label="Find text">
+      <input id="replaceText" type="text" placeholder="Replace with" aria-label="Replacement text">
+      <button id="findNextBtn" type="button">Next</button>
+      <button id="replaceOneBtn" type="button">Replace</button>
+      <button id="replaceAllBtn" type="button">All</button>
+      <button id="findCloseBtn" type="button" aria-label="Close find">×</button>
+      <span id="findCount" aria-live="polite"></span>
+    </div>
+    <div id="completionPopup" role="listbox" aria-label="Code suggestions"></div>
+    <div class="editorFrame">
+      <pre id="lineNumbers" aria-hidden="true">1</pre>
+      <textarea id="src" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Code editor"></textarea>
+    </div>
+    <div id="editorInfo"><span id="cursorInfo">Ln 1, Col 1</span><span id="docInfo">1 line · 0 characters</span><span>Ctrl+Enter Run · Ctrl+S Download · Ctrl+Shift+L Demo</span></div>
+  </section>
+
+  <section>
+    <div class="bar">
+      <button class="tab active" id="tabOut" role="tab" aria-selected="true">Output</button>
+      <button class="tab" id="tabC" role="tab" aria-selected="false">output.c</button>
+    </div>
+    <pre id="out" aria-live="polite">Press Run to compile and execute your program.
+
+Run works right here in the browser.
+Compile to C shows the C code (output.c) that you can
+build natively with:  gcc output.c -o main -lm</pre>
+    <pre id="cout" class="hidden" aria-live="polite"></pre>
+  </section>
+</main>
+
+<nav class="mobileDock" aria-label="Mobile workspace shortcuts">
+  <button type="button" id="dockEditorBtn" class="active" aria-label="Open editor" aria-current="page"><span aria-hidden="true">⌨</span><small>Editor</small></button>
+  <button type="button" id="dockRunBtn" aria-label="Run VYRA program"><span aria-hidden="true">▶</span><small>Run</small></button>
+  <button type="button" id="dockOutputBtn" aria-label="Open output"><span aria-hidden="true">▤</span><small>Output</small></button>
+  <button type="button" id="dockGuideBtn" aria-label="Open how to use guide"><span aria-hidden="true">ⓘ</span><small>Guide</small></button>
+</nav>
+
+<script>
+/* ==== VYRA COMPILER (JS port of vyra.c) ==== */
+const VYRA = (() => {
+  "use strict";
+
+  const MAX_NAME = 128, MAX_DEPTH = 64, MAX_ARGS = 64, MAX_VARS = 500;
+  const KIND_IF = 0, KIND_ELSE = 1, KIND_WHILE = 2;
+
+  const RESERVED = new Set([
+    "auto", "break", "case", "char", "const", "continue", "default", "do",
+    "double", "else", "enum", "extern", "float", "for", "goto", "if", "inline",
+    "int", "long", "register", "restrict", "return", "short", "signed",
+    "sizeof", "static", "struct", "switch", "typedef", "union", "unsigned",
+    "void", "volatile", "while", "main", "printf",
+    "fn", "print", "elif", "pass", "and", "or", "not", "True", "False", "PI",
+    "sqrt", "sin", "cos", "tan", "abs", "pow", "floor", "ceil",
+    "min", "max", "round", "log", "log10", "log2", "exp", "fmod",
+    "rand", "srand", "len",
+    "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
+    "exp2", "expm1", "log1p", "logb", "scalbn", "scalbln",
+    "cbrt", "hypot", "erf", "erfc", "tgamma", "lgamma",
+    "copysign", "fdim", "fmax", "fmin", "fma", "remainder", "remquo",
+    "rint", "lrint", "llrint", "nearbyint", "trunc",
+    "deg2rad", "rad2deg",
+    "isinf", "isnan", "isfinite", "isnormal", "signbit",
+    "clamp", "lerp", "map",
+    "typeof", "type_of", "to_int", "to_float", "ord", "chr",
+    "sum", "prod", "mean", "median", "stdev",
+    "sort", "reverse", "shuffle",
+    "range", "enumerate", "zip",
+    "any", "all",
+    "abs_int", "clz", "ctz", "popcount",
+    "min_int", "max_int",
+    "gcd", "lcm",
+    "factorial", "perm", "comb",
+    "sqrt_int", "isqrt",
+    "bit_and", "bit_or", "bit_xor", "bit_not", "bit_shl", "bit_shr",
+    /* String functions (numeric return) */
+    "find", "rfind", "startswith", "endswith", "contains", "count",
+    "isalpha", "isdigit", "isalnum", "isspace", "islower", "isupper",
+    "isnumeric", "isdecimal", "isidentifier", "isprintable",
+    /* More math */
+    "frexp", "ldexp", "modf", "nextafter",
+    /* Constants */
+    "E", "TAU", "INF", "NAN", "MAX_INT", "MIN_INT", "MAX_FLOAT", "MIN_FLOAT"]);
+
+  /* VYRA function -> [C name, JS name] */
+  const FUNCS = new Map([
+    /* Math - basic */
+    ["sqrt", ["sqrt", "Math.sqrt"]], ["sin", ["sin", "Math.sin"]],
+    ["cos", ["cos", "Math.cos"]], ["tan", ["tan", "Math.tan"]],
+    ["abs", ["fabs", "Math.abs"]], ["pow", ["pow", "Math.pow"]],
+    ["floor", ["floor", "Math.floor"]], ["ceil", ["ceil", "Math.ceil"]],
+    ["min", ["fmin", "Math.min"]], ["max", ["fmax", "Math.max"]],
+    ["round", ["round", "Math.round"]], ["log", ["log", "Math.log"]],
+    ["log10", ["log10", "Math.log10"]], ["log2", ["log2", "Math.log2"]],
+    ["exp", ["exp", "Math.exp"]], ["fmod", ["fmod", "vyraFmod"]],
+    /* Math - inverse trig/hyperbolic */
+    ["asin", ["asin", "Math.asin"]], ["acos", ["acos", "Math.acos"]],
+    ["atan", ["atan", "Math.atan"]], ["atan2", ["atan2", "Math.atan2"]],
+    ["sinh", ["sinh", "Math.sinh"]], ["cosh", ["cosh", "Math.cosh"]],
+    ["tanh", ["tanh", "Math.tanh"]], ["asinh", ["asinh", "Math.asinh"]],
+    ["acosh", ["acosh", "Math.acosh"]], ["atanh", ["atanh", "Math.atanh"]],
+    /* Math - special functions */
+    ["exp2", ["exp2", "Math.exp2"]], ["expm1", ["expm1", "Math.expm1"]],
+    ["log1p", ["log1p", "Math.log1p"]], ["logb", ["logb", "vyraLogb"]],
+    ["scalbn", ["scalbn", "vyraScalbn"]], ["scalbln", ["scalbln", "vyraScalbln"]],
+    ["cbrt", ["cbrt", "Math.cbrt"]], ["hypot", ["hypot", "Math.hypot"]],
+    ["erf", ["erf", "Math.erf"]], ["erfc", ["erfc", "Math.erfc"]],
+    ["tgamma", ["tgamma", "Math.tgamma"]], ["lgamma", ["lgamma", "Math.logGamma"]],
+    /* Math - floating point manipulation */
+    ["copysign", ["copysign", "vyraCopysign"]], ["fdim", ["fdim", "vyraFdim"]],
+    ["fmax", ["fmax", "Math.max"]], ["fmin", ["fmin", "Math.min"]],
+    ["fma", ["fma", "vyraFma"]], ["remainder", ["remainder", "vyraRemainder"]],
+    ["remquo", ["vyra_remquo", "vyraRemquo"]],
+    ["rint", ["rint", "Math.round"]], ["lrint", ["lrint", "vyraLrint"]],
+    ["llrint", ["llrint", "vyraLlrint"]], ["nearbyint", ["nearbyint", "Math.round"]],
+    ["trunc", ["trunc", "Math.trunc"]],
+    ["deg2rad", ["vyra_deg2rad", "vyraDeg2rad"]], ["rad2deg", ["vyra_rad2deg", "vyraRad2deg"]],
+    /* Math - classification */
+    ["isinf", ["vyra_isinf", "vyraIsinf"]], ["isnan", ["vyra_isnan", "vyraIsnan"]],
+    ["isfinite", ["vyra_isfinite", "vyraIsfinite"]], ["isnormal", ["vyra_isnormal", "vyraIsnormal"]],
+    ["signbit", ["vyra_signbit", "vyraSignbit"]],
+    /* Math - utilities */
+    ["clamp", ["vyra_clamp", "vyraClamp"]], ["lerp", ["vyra_lerp", "vyraLerp"]],
+    ["map", ["vyra_map", "vyraMap"]],
+    /* Type conversion */
+    ["typeof", ["vyra_typeof", "vyraTypeof"]], ["type_of", ["vyra_type_of", "vyraTypeOf"]],
+    ["to_int", ["vyra_to_int", "vyraToInt"]], ["to_float", ["vyra_to_float", "vyraToFloat"]],
+    ["ord", ["vyra_ord", "vyraOrd"]], ["chr", ["vyra_chr", "vyraChr"]],
+    /* Statistics */
+    ["sum", ["vyra_sum", "vyraSum"]], ["prod", ["vyra_prod", "vyraProd"]],
+    ["mean", ["vyra_mean", "vyraMean"]], ["median", ["vyra_median", "vyraMedian"]],
+    ["stdev", ["vyra_stdev", "vyraStdev"]],
+    /* Array operations (input arrays) */
+    ["sort", ["vyra_sort", "vyraSort"]], ["reverse", ["vyra_reverse", "vyraReverse"]],
+    ["shuffle", ["vyra_shuffle", "vyraShuffle"]],
+    ["range", ["vyra_range", "vyraRange"]], ["enumerate", ["vyra_enumerate", "vyraEnumerate"]],
+    ["zip", ["vyra_zip", "vyraZip"]],
+    /* Logic */
+    ["any", ["vyra_any", "vyraAny"]], ["all", ["vyra_all", "vyraAll"]],
+    /* Integer math */
+    ["abs_int", ["vyra_abs_int", "vyraAbsInt"]], ["clz", ["vyra_clz", "vyraClz"]],
+    ["ctz", ["vyra_ctz", "vyraCtz"]], ["popcount", ["vyra_popcount", "vyraPopcount"]],
+    ["min_int", ["vyra_min_int", "vyraMinInt"]], ["max_int", ["vyra_max_int", "vyraMaxInt"]],
+    ["gcd", ["vyra_gcd", "vyraGcd"]], ["lcm", ["vyra_lcm", "vyraLcm"]],
+    /* Combinatorics */
+    ["factorial", ["vyra_factorial", "vyraFactorial"]], ["perm", ["vyra_perm", "vyraPerm"]],
+    ["comb", ["vyra_comb", "vyraComb"]],
+    ["sqrt_int", ["vyra_sqrt_int", "vyraSqrtInt"]], ["isqrt", ["vyra_isqrt", "vyraIsqrt"]],
+    /* Bitwise */
+    ["bit_and", ["vyra_bit_and", "vyraBitAnd"]], ["bit_or", ["vyra_bit_or", "vyraBitOr"]],
+    ["bit_xor", ["vyra_bit_xor", "vyraBitXor"]], ["bit_not", ["vyra_bit_not", "vyraBitNot"]],
+    ["bit_shl", ["vyra_bit_shl", "vyraBitShl"]], ["bit_shr", ["vyra_bit_shr", "vyraBitShr"]],
+    /* Random & string */
+    ["rand", ["vyra_rand", "vyraRand"]], ["srand", ["srand", "vyraSrand"]],
+    ["len", ["vyra_len", "vyraLen"]],
+    /* String functions (numeric return) */
+    ["find", ["vyra_find", "vyraFind"]], ["rfind", ["vyra_rfind", "vyraRfind"]],
+    ["startswith", ["vyra_startswith", "vyraStartswith"]], ["endswith", ["vyra_endswith", "vyraEndswith"]],
+    ["contains", ["vyra_contains", "vyraContains"]], ["count", ["vyra_count", "vyraCount"]],
+    ["isalpha", ["vyra_isalpha", "vyraIsalpha"]], ["isdigit", ["vyra_isdigit", "vyraIsdigit"]],
+    ["isalnum", ["vyra_isalnum", "vyraIsalnum"]], ["isspace", ["vyra_isspace", "vyraIsspace"]],
+    ["islower", ["vyra_islower", "vyraIslower"]], ["isupper", ["vyra_isupper", "vyraIsupper"]],
+    ["isnumeric", ["vyra_isnumeric", "vyraIsnumeric"]], ["isdecimal", ["vyra_isdecimal", "vyraIsdecimal"]],
+    ["isidentifier", ["vyra_isidentifier", "vyraIsidentifier"]], ["isprintable", ["vyra_isprintable", "vyraIsprintable"]],
+    /* More math */
+    ["frexp", ["frexp", "vyraFrexp"]], ["ldexp", ["ldexp", "vyraLdexp"]],
+    ["modf", ["modf", "vyraModf"]], ["nextafter", ["nextafter", "vyraNextafter"]],
+    /* Constants */
+    ["E", ["M_E", "Math.E"]], ["TAU", ["6.283185307179586", "2 * Math.PI"]],
+    ["INF", ["INFINITY", "Infinity"]], ["NAN", ["NAN", "NaN"]],
+    ["MAX_INT", ["2147483647", "2147483647"]], ["MIN_INT", ["-2147483648", "-2147483648"]],
+    ["MAX_FLOAT", ["1.7976931348623157e+308", "Number.MAX_VALUE"]], ["MIN_FLOAT", ["2.2250738585072014e-308", "Number.MIN_VALUE"]]]);
+
+  const isDigit = (c) => !!c && c >= "0" && c <= "9";
+  const isIdentStart = (c) => !!c && /^[A-Za-z_]$/.test(c);
+  const isIdentChar = (c) => !!c && /^[A-Za-z0-9_]$/.test(c);
+  const isIdentifier = (s) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(s);
+  const isSpace = (c) => !!c && /^\s$/.test(c);
+
+  /* True only if the WHOLE string is one literal ("a" is, "a" + "b" is not). */
+  function isStringLiteral(s) {
+    const q = s[0];
+    if (q !== '"' && q !== "'") return false;
+    for (let i = 1; i < s.length; i++) {
+      if (s[i] === "\\") {
+        if (i + 1 >= s.length) return false;
+        i++;
+        continue;
+      }
+      if (s[i] === q) return i + 1 === s.length;
+    }
+    return false;
+  }
+
+  /* The real text value of a literal (for the JavaScript backend). */
+  function literalValue(s) {
+    const map = { n: "\n", t: "\t", r: "\r", "0": "\0" };
+    let out = "";
+    for (let i = 1; i + 1 < s.length; i++) {
+      const c = s[i];
+      if (c === "\\" && i + 2 < s.length) {
+        const n = s[++i];
+        out += Object.prototype.hasOwnProperty.call(map, n) ? map[n] : n;
+      } else out += c;
+    }
+    return out;
+  }
+
+  /* The literal as a C "..." literal. */
+  function cLiteral(s) {
+    let out = '"';
+    for (let i = 1; i + 1 < s.length; i++) {
+      const c = s[i];
+      if (c === "\\" && i + 2 < s.length) {
+        const n = s[++i];
+        out += n === "'" ? "'" : "\\" + n;
+      } else if (c === '"') out += '\\"';
+      else out += c;
+    }
+    return out + '"';
+  }
+
+  function stripComment(s) {
+    let quote = "";
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (quote) {
+        if (c === "\\" && i + 1 < s.length) i++;
+        else if (c === quote) quote = "";
+      } else if (c === '"' || c === "'") quote = c;
+      else if (c === "#") return s.slice(0, i);
+    }
+    return s;
+  }
+
+  function measureIndent(s) {
+    let n = 0;
+    for (const c of s) {
+      if (c === " ") n++;
+      else if (c === "\t") n += 4;
+      else break;
+    }
+    return n;
+  }
+
+  /* Finds the '=' of an assignment, skipping strings and ==, !=, <=, >= */
+  function findAssign(s) {
+    let quote = "";
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (quote) {
+        if (c === "\\" && i + 1 < s.length) i++;
+        else if (c === quote) quote = "";
+      } else if (c === '"' || c === "'") quote = c;
+      else if (c === "=") {
+        const prev = i > 0 ? s[i - 1] : "";
+        if (s[i + 1] === "=") { i++; continue; }
+        if (prev && "!<>=".includes(prev)) continue;
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  function startsKw(s, kw) {
+    return s.startsWith(kw) && (s[kw.length] === " " || s[kw.length] === "\t" || s[kw.length] === "(");
+  }
+
+  /* printf("%.15g") look-alike */
+  function fmtG(x) {
+    if (Number.isNaN(x)) return "nan";
+    if (x === Infinity) return "inf";
+    if (x === -Infinity) return "-inf";
+    if (x === 0) return Object.is(x, -0) ? "-0" : "0";
+
+    const m = /^(-?)(\d)(?:\.(\d+))?e([+-]\d+)$/.exec(x.toExponential(14));
+    const sign = m[1], exp = parseInt(m[4], 10);
+
+    if (exp < -4 || exp >= 15) {
+      const frac = (m[3] || "").replace(/0+$/, "");
+      const e = Math.abs(exp);
+      return sign + m[2] + (frac ? "." + frac : "") + "e" + (exp < 0 ? "-" : "+") + (e < 10 ? "0" : "") + e;
+    }
+
+    let s = x.toFixed(Math.max(0, 14 - exp));
+    if (s.includes(".")) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    return s;
+  }
+
+  /* JS runtime helpers for VYRA built-ins */
+  const JS_RUNTIME_HELPERS = `
+/* Math - basic */
+function vyraFmod(a, b) { return a - b * Math.floor(a / b); }
+function vyraRand() { return Math.random(); }
+function vyraSrand(seed) { /* Math.random doesn't support seeding, ignore */ }
+function vyraLen(s) { return s ? s.length : 0; }
+/* Array helper for variadic functions */
+function vyraArray(...args) { return args; }
+/* Math - inverse trig/hyperbolic */
+function vyraAsin(x) { return Math.asin(x); }
+function vyraAcos(x) { return Math.acos(x); }
+function vyraAtan(x) { return Math.atan(x); }
+function vyraAtan2(y, x) { return Math.atan2(y, x); }
+function vyraSinh(x) { return Math.sinh(x); }
+function vyraCosh(x) { return Math.cosh(x); }
+function vyraTanh(x) { return Math.tanh(x); }
+function vyraAsinh(x) { return Math.asinh(x); }
+function vyraAcosh(x) { return Math.acosh(x); }
+function vyraAtanh(x) { return Math.atanh(x); }
+/* Math - special functions */
+function vyraExp2(x) { return Math.exp2 ? Math.exp2(x) : Math.pow(2, x); }
+function vyraExpm1(x) { return Math.expm1 ? Math.expm1(x) : Math.exp(x) - 1; }
+function vyraLog1p(x) { return Math.log1p ? Math.log1p(x) : Math.log(1 + x); }
+function vyraLogb(x) { return Math.logb ? Math.logb(x) : Math.floor(Math.log2(Math.abs(x))); }
+function vyraScalbn(x, n) { return x * Math.pow(2, n); }
+function vyraScalbln(x, n) { return x * Math.pow(2, n); }
+function vyraCbrt(x) { return Math.cbrt ? Math.cbrt(x) : Math.sign(x) * Math.pow(Math.abs(x), 1/3); }
+function vyraHypot(x, y) { return Math.hypot ? Math.hypot(x, y) : Math.sqrt(x*x + y*y); }
+function vyraErf(x) { return Math.erf ? Math.erf(x) : 0; }
+function vyraErfc(x) { return Math.erfc ? Math.erfc(x) : 1; }
+function vyraTgamma(x) { return Math.tgamma ? Math.tgamma(x) : Math.exp(Math.lgamma(x)); }
+function vyraLgamma(x) { return Math.logGamma ? Math.logGamma(x) : Math.log(Math.abs(Math.tgamma(x))); }
+/* Math - floating point manipulation */
+function vyraCopysign(x, y) { return Math.abs(x) * (y >= 0 ? 1 : -1); }
+function vyraFdim(x, y) { return x > y ? x - y : 0; }
+function vyraFma(x, y, z) { return x * y + z; }
+function vyraRemainder(x, y) { return x - y * Math.round(x / y); }
+function vyraRemquo(x, y) { return x - y * Math.round(x / y); }
+function vyraLrint(x) { return Math.round(x); }
+function vyraLlrint(x) { return Math.round(x); }
+/* Math - classification */
+function vyraIsinf(x) { return !isFinite(x) && !isNaN(x) ? 1 : 0; }
+function vyraIsnan(x) { return isNaN(x) ? 1 : 0; }
+function vyraIsfinite(x) { return isFinite(x) ? 1 : 0; }
+function vyraIsnormal(x) { return isFinite(x) && x !== 0 ? 1 : 0; }
+function vyraSignbit(x) { return 1 / x === -Infinity ? 1 : 0; }
+/* Math - utilities */
+function vyraClamp(x, min, max) { return x < min ? min : (x > max ? max : x); }
+function vyraLerp(a, b, t) { return a + (b - a) * t; }
+function vyraMap(x, in_min, in_max, out_min, out_max) { return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min; }
+function vyraDeg2rad(d) { return d * Math.PI / 180; }
+function vyraRad2deg(r) { return r * 180 / Math.PI; }
+/* Type conversion */
+function vyraTypeof(x) { return 1; }
+function vyraTypeOf(x) { return 1; }
+function vyraToInt(x) { return Math.trunc(x); }
+function vyraToFloat(x) { return x; }
+function vyraOrd(s) { return s ? s.charCodeAt(0) : 0; }
+function vyraChr(c) { return String.fromCharCode(c & 0xFF); }
+/* Statistics */
+function vyraSum(arr) { return arr.reduce((a, b) => a + b, 0); }
+function vyraProd(arr) { return arr.reduce((a, b) => a * b, 1); }
+function vyraMean(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0; }
+function vyraMedian(arr) { if (!arr.length) return 0; const s = [...arr].sort((a,b)=>a-b); return s[Math.floor(s.length/2)]; }
+function vyraStdev(arr) { if (arr.length <= 1) return 0; const m = vyraMean(arr); return Math.sqrt(arr.reduce((s, v) => s + (v-m)*(v-m), 0) / (arr.length - 1)); }
+/* Array operations */
+function vyraSort(arr) { arr.sort((a,b)=>a-b); return arr; }
+function vyraReverse(arr) { arr.reverse(); return arr; }
+function vyraShuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+function vyraRange(start, stop, step) { if (step === 0) return []; const arr = []; for (let v = start; (step > 0 ? v < stop : v > stop); v += step) arr.push(v); return arr; }
+function vyraEnumerate(arr) { return arr.flatMap((v, i) => [i, v]); }
+function vyraZip(a, b) { const n = Math.min(a.length, b.length); return Array.from({length: n}, (_, i) => [a[i], b[i]]).flat(); }
+/* Logic */
+function vyraAny(arr) { return arr.some(Boolean) ? 1 : 0; }
+function vyraAll(arr) { return arr.every(Boolean) ? 1 : 0; }
+/* Integer math */
+function vyraAbsInt(x) { return Math.abs(x); }
+function vyraClz(x) { if (x === 0) return 32; let n = 0; while ((x & 0x80000000) === 0) { x <<= 1; n++; } return n; }
+function vyraCtz(x) { if (x === 0) return 32; let n = 0; while ((x & 1) === 0) { x >>= 1; n++; } return n; }
+function vyraPopcount(x) { let n = 0; while (x) { n += x & 1; x >>= 1; } return n; }
+function vyraMinInt(a, b) { return a < b ? a : b; }
+function vyraMaxInt(a, b) { return a > b ? a : b; }
+function vyraGcd(a, b) { while (b) { const t = b; b = a % b; a = t; } return Math.abs(a); }
+function vyraLcm(a, b) { return a === 0 || b === 0 ? 0 : Math.abs(a / vyraGcd(a, b) * b); }
+/* Combinatorics */
+function vyraFactorial(n) { if (n < 0) return 0; let r = 1; for (let i = 2; i <= n; i++) r *= i; return r; }
+function vyraPerm(n, k) { if (k < 0 || k > n) return 0; let r = 1; for (let i = 0; i < k; i++) r *= (n - i); return r; }
+function vyraComb(n, k) { if (k < 0 || k > n) return 0; if (k > n - k) k = n - k; let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; }
+function vyraSqrtInt(n) { if (n < 0) return 0; let x = n; let y = (x + 1) >> 1; while (y < x) { x = y; y = (x + n / x) >> 1; } return x; }
+function vyraIsqrt(n) { return vyraSqrtInt(n); }
+/* Bitwise */
+function vyraBitAnd(a, b) { return a & b; }
+function vyraBitOr(a, b) { return a | b; }
+function vyraBitXor(a, b) { return a ^ b; }
+function vyraBitNot(a) { return ~a; }
+function vyraBitShl(a, b) { return a << b; }
+function vyraBitShr(a, b) { return a >> b; }
+/* String functions (numeric return) */
+function vyraFind(s, sub) { return s ? s.indexOf(sub) : -1; }
+function vyraRfind(s, sub) { return s ? s.lastIndexOf(sub) : -1; }
+function vyraStartswith(s, prefix) { return s && s.startsWith(prefix) ? 1 : 0; }
+function vyraEndswith(s, suffix) { return s && s.endsWith(suffix) ? 1 : 0; }
+function vyraContains(s, sub) { return s && s.includes(sub) ? 1 : 0; }
+function vyraCount(s, sub) { if (!s || !sub) return 0; let n = 0, i = 0; while ((i = s.indexOf(sub, i)) !== -1) { n++; i += sub.length; } return n; }
+function vyraIsalpha(s) { return s && /^[A-Za-z]+$/.test(s) ? 1 : 0; }
+function vyraIsdigit(s) { return s && /^\d+$/.test(s) ? 1 : 0; }
+function vyraIsalnum(s) { return s && /^[A-Za-z0-9]+$/.test(s) ? 1 : 0; }
+function vyraIsspace(s) { return s && /^\s+$/.test(s) ? 1 : 0; }
+function vyraIslower(s) { return s && /^[a-z]+$/.test(s) ? 1 : 0; }
+function vyraIsupper(s) { return s && /^[A-Z]+$/.test(s) ? 1 : 0; }
+function vyraIsnumeric(s) { return s && /^\d+$/.test(s) ? 1 : 0; }
+function vyraIsdecimal(s) { return s && /^\d+$/.test(s) ? 1 : 0; }
+function vyraIsidentifier(s) { return s && /^[A-Za-z_][A-Za-z0-9_]*$/.test(s) ? 1 : 0; }
+function vyraIsprintable(s) { return s && /^[\x20-\x7E\s]+$/.test(s) ? 1 : 0; }
+/* More math */
+function vyraFrexp(x) { if (x === 0) return 0; const e = Math.floor(Math.log2(Math.abs(x))) + 1; return x / Math.pow(2, e); }
+function vyraLdexp(x, i) { return x * Math.pow(2, i); }
+function vyraModf(x) { const intPart = Math.trunc(x); return [x - intPart, intPart]; }
+function vyraNextafter(x, y) { if (x === y) return x; return y > x ? x + Number.EPSILON : x - Number.EPSILON; }
+`;
+
+  /* ---------------------------------------------------------- compiler */
+
+  function compile(source) {
+    const errors = [];
+    const vars = [];
+    const cOut = [];
+    const jOut = [];
+    const blocks = []; /* {indent, body, kind} */
+    let lineNo = 0, expectBlock = false, baseIndent = -1;
+
+    const err = (msg) => errors.push(`Error (line ${lineNo}): ${msg}`);
+    const findVar = (name) => vars.find((v) => v.name === name);
+    const isStringVar = (s) => isIdentifier(s) && !!findVar(s) && findVar(s).isString;
+    const pad = () => "    ".repeat(blocks.length + 1);
+    const emit = (c, j) => { cOut.push(pad() + c); jOut.push(pad() + (j === undefined ? c : j)); };
+
+    /* Translate a numeric expression. Returns {c, j} or null after an error. */
+    function expression(e) {
+      let c = "", j = "", paren = 0, i = 0, inFunctionCall = 0;
+
+      while (i < e.length) {
+        const ch = e[i];
+
+        if (ch === '"' || ch === "'") {
+          if (inFunctionCall || paren > 0) {
+            /* Allow string literals as function arguments */
+            const quote = ch;
+            const start = i;
+            i++;
+            while (i < e.length && e[i] !== quote) {
+              if (e[i] === "\\" && i + 1 < e.length) i += 2;
+              else i++;
+            }
+            if (i < e.length && e[i] === quote) i++;
+            const literal = e.slice(start, i);
+            c += literal;
+            j += literal;
+            continue;
+          }
+          err("Strings can't be used in math (string joining isn't supported yet)");
+          return null;
+        }
+
+        if (isDigit(ch) || (ch === "." && isDigit(e[i + 1]))) {
+          const s = i;
+          let isFloat = false;
+          while (isDigit(e[i])) i++;
+          if (e[i] === ".") {
+            isFloat = true;
+            i++;
+            while (isDigit(e[i])) i++;
+          }
+          if ((e[i] === "e" || e[i] === "E") &&
+              (isDigit(e[i + 1]) || ((e[i + 1] === "+" || e[i + 1] === "-") && isDigit(e[i + 2])))) {
+            isFloat = true;
+            i += 2;
+            while (isDigit(e[i])) i++;
+          }
+          const num = e.slice(s, i);
+          c += num + (isFloat ? "" : ".0");
+          j += String(Number(num));
+          continue;
+        }
+
+        if (isIdentStart(ch)) {
+          const s = i;
+          while (isIdentChar(e[i])) i++;
+          const word = e.slice(s, i);
+          let q = i;
+          while (isSpace(e[q])) q++;
+
+          if (word === "PI") { c += "3.141592653589793"; j += "3.141592653589793"; }
+          else if (word === "E") { c += "2.718281828459045"; j += "2.718281828459045"; }
+          else if (word === "TAU") { c += "6.283185307179586"; j += "6.283185307179586"; }
+          else if (word === "INF") { c += "INFINITY"; j += "Infinity"; }
+          else if (word === "NAN") { c += "NAN"; j += "NaN"; }
+          else if (word === "MAX_INT") { c += "2147483647.0"; j += "2147483647"; }
+          else if (word === "MIN_INT") { c += "-2147483648.0"; j += "-2147483648"; }
+          else if (word === "MAX_FLOAT") { c += "1.7976931348623157e+308"; j += "Number.MAX_VALUE"; }
+          else if (word === "MIN_FLOAT") { c += "2.2250738585072014e-308"; j += "Number.MIN_VALUE"; }
+          else if (word === "and") { c += " && "; j += " && "; }
+          else if (word === "or") { c += " || "; j += " || "; }
+          else if (word === "not") { c += "!"; j += "!"; }
+          else if (word === "True") { c += "1"; j += "1"; }
+          else if (word === "False") { c += "0"; j += "0"; }
+          else if (e[q] === "(") {
+            const f = FUNCS.get(word);
+            if (!f) { err(`Unknown function: ${word}`); return null; }
+            const arrayFuncs = new Set(["sum", "prod", "mean", "median", "stdev", "any", "all"]);
+            if (arrayFuncs.has(word)) {
+              c += f[0] + "(vyraArray(";
+              j += f[1] + "(vyraArray(";
+              inFunctionCall = 2; // 2 = array function
+            } else {
+              c += f[0];
+              j += f[1];
+              inFunctionCall = 1;
+            }
+          } else {
+            const v = findVar(word);
+            if (!v) { err(`Undefined variable: ${word}`); return null; }
+            if (v.isString) {
+              if (paren > 0 || inFunctionCall) {
+                /* String variable as function argument (e.g., len(name)) */
+                c += word;
+                j += "v_" + word;
+              } else {
+                err(`String variable '${word}' can't be used in math (use len() for length)`);
+                return null;
+              }
+            } else {
+              c += word;
+              j += "v_" + word;
+            }
+          }
+          continue;
+        }
+
+        if (ch === "=") {
+          const prev = i > 0 ? e[i - 1] : "";
+          if (e[i + 1] !== "=" && !(prev && "!<>=".includes(prev))) {
+            err("Use '==' to compare values ('=' is only for assignment)");
+            return null;
+          }
+        } else if (ch === "*" && e[i + 1] === "*") {
+          err("Use 'pow(a, b)' instead of '**'");
+          return null;
+        } else if (ch === "/" && (e[i + 1] === "/" || e[i + 1] === "*")) {
+          err("'//' and '/*' aren't supported");
+          return null;
+        } else if (ch === "%") {
+          err("Use 'fmod(a, b)' instead of '%' operator");
+          return null;
+        } else if (ch === "(") {
+          paren++;
+          if (inFunctionCall === 2 && paren === 1) {
+            i++;
+            continue; // skip adding '(' to output for array functions
+          }
+        }
+        else if (ch === ")") {
+          if (--paren < 0) { err("Unbalanced parentheses"); return null; }
+          if (inFunctionCall === 2 && paren === 0) {
+            c += "))";
+            j += "))";
+            inFunctionCall = 0;
+          } else if (paren === 0) {
+            inFunctionCall = 0;
+          }
+        } else if (ch === ",") {
+          if (paren === 0) { err("Unexpected ','"); return null; }
+        } else if (!"+-*/<>=!. \t".includes(ch)) {
+          err(`Unexpected character '${ch}'`);
+          return null;
+        }
+
+        c += ch;
+        j += ch;
+        i++;
+      }
+
+      if (paren !== 0) { err("Unbalanced parentheses"); return null; }
+      return { c, j };
+    }
+
+    function compilePrint(line) {
+      if (!line.endsWith(")")) { err("print() is missing its closing parenthesis"); return; }
+
+      const inner = line.slice(6, -1).trim();
+      const args = [];
+
+      if (inner) {
+        let cur = "", paren = 0, quote = "";
+        for (let i = 0; i < inner.length; i++) {
+          const ch = inner[i];
+          if (quote) {
+            cur += ch;
+            if (ch === "\\" && i + 1 < inner.length) cur += inner[++i];
+            else if (ch === quote) quote = "";
+          } else if (ch === '"' || ch === "'") { quote = ch; cur += ch; }
+          else {
+            if (ch === "(") paren++;
+            else if (ch === ")") paren--;
+            if (ch === "," && paren === 0) {
+              if (args.length + 1 >= MAX_ARGS) { err("Too many arguments in print()"); return; }
+              args.push(cur);
+              cur = "";
+              continue;
+            }
+            cur += ch;
+          }
+        }
+        if (quote) { err("Unterminated string"); return; }
+        args.push(cur);
+      }
+
+      const parts = [];
+
+      for (let i = 0; i < args.length; i++) {
+        const a = args[i].trim();
+
+        if (!a) { err("Empty argument in print()"); return; }
+        if (i > 0) cOut.push(pad() + 'printf(" ");');
+
+        if (isStringLiteral(a)) {
+          cOut.push(pad() + `printf("%s", ${cLiteral(a)});`);
+          parts.push(JSON.stringify(literalValue(a)));
+        } else if (isStringVar(a)) {
+          cOut.push(pad() + `printf("%s", ${a});`);
+          parts.push("v_" + a);
+        } else {
+          const ex = expression(a);
+          if (!ex) return;
+          cOut.push(pad() + `printf("%.15g", (double)(${ex.c}));`);
+          parts.push(`__f(Number(${ex.j}))`);
+        }
+      }
+
+      cOut.push(pad() + 'printf("\\n");');
+      jOut.push(pad() + `__p([${parts.join(", ")}].join(" "));`);
+    }
+
+    function compileAssignment(line) {
+      const eq = findAssign(line);
+
+      if (eq < 0) { err("Invalid assignment"); return; }
+
+      let op = "";
+      let name;
+
+      if (eq > 0 && "+-*/".includes(line[eq - 1])) {
+        op = line[eq - 1];
+        name = line.slice(0, eq - 1);
+      } else name = line.slice(0, eq);
+
+      name = name.trim();
+      const expr = line.slice(eq + 1).trim();
+
+      if (name.length >= MAX_NAME || !isIdentifier(name)) { err(`Invalid variable name: ${name}`); return; }
+      if (RESERVED.has(name)) { err(`'${name}' is a reserved word and can't be a variable name`); return; }
+      if (!expr) { err("Missing value after '='"); return; }
+
+      const isStr = isStringLiteral(expr) || isStringVar(expr);
+      const v = findVar(name);
+
+      if (op && isStr) { err(`'${op}=' only works with numbers`); return; }
+      if (!v && op) { err(`Undefined variable: ${name}`); return; }
+      if (v && v.isString !== isStr) {
+        err(`Can't assign ${isStr ? "a string" : "a number"} to ${v.isString ? "the string" : "the number"} variable '${name}'`);
+        return;
+      }
+
+      if (isStr) {
+        if (isStringLiteral(expr)) {
+          emit(`${name} = ${cLiteral(expr)};`, `v_${name} = ${JSON.stringify(literalValue(expr))};`);
+        } else {
+          emit(`${name} = ${expr};`, `v_${name} = v_${expr};`);
+        }
+      } else {
+        const ex = expression(expr);
+        if (!ex) return;
+        emit(`${name} ${op}= ${ex.c};`, `v_${name} ${op}= Number(${ex.j});`);
+      }
+
+      /* Added after the expression so `x = x + 1` fails when x doesn't exist. */
+      if (!v) {
+        if (vars.length >= MAX_VARS) { err(`Too many variables (max ${MAX_VARS})`); return; }
+        vars.push({ name, isString: isStr });
+      }
+    }
+
+    function pushBlock(rel, kind) {
+      if (blocks.length >= MAX_DEPTH) { err(`Blocks are nested too deeply (max ${MAX_DEPTH})`); return; }
+      blocks.push({ indent: rel, body: -1, kind });
+      expectBlock = true;
+    }
+
+    function compileConditional(line, rel, kw, kind) {
+      if (!line.endsWith(":")) {
+        err(`'${kw}' statement must end with ':'`);
+        pushBlock(rel, kind);
+        return;
+      }
+
+      const cond = line.slice(kw.length, -1).trim();
+
+      if (!cond) {
+        err(`'${kw}' needs a condition`);
+        pushBlock(rel, kind);
+        return;
+      }
+
+      const ex = expression(cond);
+      const head = kw === "elif" ? "else if" : kw;
+
+      if (ex) {
+        emit(`${head} (${ex.c}) {`, `${head} (${ex.j}) {`);
+        if (kind === KIND_WHILE) jOut.push(pad() + "    __g();");
+      }
+
+      pushBlock(rel, kind);
+    }
+
+    function compileLine(raw) {
+      const indent = measureIndent(raw);
+      const line = stripComment(raw).trim();
+
+      if (!line) return;
+
+      if (line.startsWith("fn ")) {
+        if (line !== "fn main():") err("Custom functions aren't supported yet (only 'fn main():')");
+        else if (baseIndent >= 0) err("'fn main():' must come before other statements");
+        return;
+      }
+
+      if (baseIndent < 0) baseIndent = indent;
+
+      let rel = indent - baseIndent;
+
+      if (rel < 0) {
+        err("Indentation is less than the start of the program");
+        rel = 0;
+      }
+
+      if (expectBlock) {
+        const top = blocks[blocks.length - 1];
+        if (top) {
+          if (rel <= top.indent) err("Expected an indented block");
+          else top.body = rel;
+        }
+        expectBlock = false;
+      }
+
+      let poppedKind = -1, poppedIndent = -1;
+
+      while (blocks.length > 0 && rel <= blocks[blocks.length - 1].indent) {
+        const b = blocks.pop();
+        poppedKind = b.kind;
+        poppedIndent = b.indent;
+        emit("}");
+      }
+
+      const expected = blocks.length > 0 ? blocks[blocks.length - 1].body : 0;
+      if (rel !== expected) err("Inconsistent indentation");
+
+      if (line.startsWith("print(")) { compilePrint(line); return; }
+
+      if (startsKw(line, "if")) { compileConditional(line, rel, "if", KIND_IF); return; }
+      if (startsKw(line, "while")) { compileConditional(line, rel, "while", KIND_WHILE); return; }
+
+      if (startsKw(line, "elif")) {
+        if (poppedKind !== KIND_IF || poppedIndent !== rel) err("'elif' without a matching 'if'");
+        compileConditional(line, rel, "elif", KIND_IF);
+        return;
+      }
+
+      if (line.startsWith("else") && line.slice(4).trim() === ":") {
+        if (poppedKind !== KIND_IF || poppedIndent !== rel) err("'else' without a matching 'if'");
+        emit("else {");
+        pushBlock(rel, KIND_ELSE);
+        return;
+      }
+
+      if (line === "break" || line === "continue") {
+        if (!blocks.some((b) => b.kind === KIND_WHILE)) err(`'${line}' outside of a loop`);
+        emit(`${line};`);
+        return;
+      }
+
+      if (line === "pass") { emit(";"); return; }
+
+      if (findAssign(line) >= 0) { compileAssignment(line); return; }
+
+      /* Expression statement (function call without assignment, e.g., srand(42)) */
+      if (isIdentStart(line[0])) {
+        let p = 0;
+        while (p < line.length && isIdentChar(line[p])) p++;
+        while (p < line.length && isSpace(line[p])) p++;
+        if (p < line.length && line[p] === "(") {
+          /* Valid function call as statement */
+          const ex = expression(line);
+          if (ex) {
+            emit(`${ex.c};`, `${ex.j};`);
+            return;
+          }
+        }
+      }
+
+      err(`Unsupported syntax: ${line}`);
+    }
+
+    const lines = source.split("\n");
+    if (lines[lines.length - 1] === "") lines.pop(); /* trailing newline */
+
+    for (const raw of lines) {
+      lineNo++;
+      if (raw.length > 2047) {
+        err("Line too long (max 2047 characters)");
+        continue;
+      }
+      compileLine(raw);
+    }
+
+    if (expectBlock) err("Expected an indented block at end of file");
+
+    while (blocks.length > 0) {
+      blocks.pop();
+      emit("}");
+    }
+
+    if (errors.length > 0) {
+      return { ok: false, errors, c: "", js: "" };
+    }
+
+    const decls = vars.map((v) => (v.isString ? `    char *${v.name} = "";` : `    double ${v.name} = 0;`));
+    const c = [
+      "#include <stdio.h>", "#include <stdlib.h>", "#include <math.h>", "#include <string.h>", "#include <time.h>", "",
+      "static double vyra_rand(void) { return (double)rand() / (double)RAND_MAX; }",
+      "static double vyra_len(const char *s) { return s ? (double)strlen(s) : 0.0; }",
+      "",
+      "int main(void) {",
+      "    srand((unsigned)time(NULL));",
+      ...decls, ...(decls.length ? [""] : []),
+      ...cOut, "", "    return 0;", "}", ""].join("\n");
+
+    const js = ['"use strict";', JS_RUNTIME_HELPERS,
+      vars.length ? "let " + vars.map((v) => `v_${v.name} = ${v.isString ? '""' : "0"}`).join(", ") + ";" : "",
+      ...jOut].join("\n");
+
+    return { ok: true, errors, c, js };
+  }
+
+  /* Runs the generated JavaScript with a time and output limit. */
+  function run(js) {
+    class Stop extends Error {}
+    const lines = [];
+    const start = performance.now();
+    let size = 0, ticks = 0, error = null;
+
+    const print = (s) => {
+      size += s.length + 1;
+      if (size > 65536) throw new Stop("[stopped: too much output]");
+      lines.push(s);
+    };
+    const guard = () => {
+      if ((++ticks & 4095) === 0 && performance.now() - start > 3000)
+        throw new Stop("[stopped: ran longer than 3 seconds]");
+    };
+
+    try {
+      new Function("__p", "__f", "__g", js)(print, fmtG, guard);
+    } catch (e) {
+      error = e instanceof Stop ? e.message : "Runtime error: " + e.message;
+    }
+
+    return { output: lines.length ? lines.join("\n") + "\n" : "", error };
+  }
+
+  return { compile, run, fmtG };
+})();
+/* ==== END VYRA COMPILER ==== */
+
+/* ---------------------------------------------------------------- page */
+
+const $ = (id) => document.getElementById(id);
+const src = $("src"), out = $("out"), cout = $("cout"), statusEl = $("status");
+const DRAFT_PREFIX = "vyra-ide-draft-v1:";
+const FILE_NAME_PREFIX = "vyra-ide-filename-v1:";
+const languageDrafts = Object.create(null);
+const languageFileNames = Object.create(null);
+let currentFileName = "main.vy";
+let autoSaveTimer = 0;
+let restoringDraft = false;
+
+// ---- VYRA, Python, and C autocomplete ----
+const languageMode=$("languageMode"), completionPopup=$("completionPopup");
+let previousMode = languageMode.value;
+const COMPLETIONS={
+vyra:["fn main():","print(","if ","elif ","else:","while ","pass","break","continue","and","or","not","True","False","PI","sqrt(","sin(","cos(","tan(","abs(","pow(","floor(","ceil("],
+python:["print(","def ","class ","if ","elif ","else:","for ","while ","import ","from ","return ","try:","except ","finally:","with ","lambda ","async def ","await ","yield ","match ","case ","True","False","None","list(","dict(","set(","tuple(","range(","enumerate(","zip(","len(","input(","open(","self","__init__"],
+c:["#include <stdio.h>","#include <stdlib.h>","#include <string.h>","#include <math.h>","int main(void) {","printf(","scanf(","fprintf(","if (","else {","switch (","case ","for (","while (","do {","struct ","typedef ","enum ","const ","static ","malloc(","free(","sizeof(","return 0;","int ","float ","double ","char ","void "]};
+let completionItems=[],completionIndex=0;
+function getCompletionPrefix(){let pos=src.selectionStart,before=src.value.slice(0,pos),m=before.match(/([A-Za-z_#!][A-Za-z0-9_:#.!>*-]*)$/);return m?{word:m[1],start:pos-m[1].length,end:pos}:null;}
+function renderCompletionPopup(){let prefix=getCompletionPrefix();if(!prefix){completionPopup.style.display="none";return;}let all=COMPLETIONS[languageMode.value]||[];completionItems=all.filter(x=>x.toLowerCase().startsWith(prefix.word.toLowerCase())).slice(0,12);if(!completionItems.length){completionPopup.style.display="none";return;}completionIndex=0;completionPopup.replaceChildren();completionItems.forEach((item,i)=>{let row=document.createElement("div");row.className="completionItem"+(i===0?" active":"");row.innerHTML='<span class="completionIcon">🔧</span><span class="completionMain"></span><span class="completionDetail"></span>';row.querySelector(".completionMain").textContent=item;row.querySelector(".completionDetail").textContent=languageMode.options[languageMode.selectedIndex].text;row.addEventListener("mousedown",ev=>{ev.preventDefault();acceptCompletion(item);});completionPopup.appendChild(row);});completionPopup.style.display="block";}
+function acceptCompletion(item){let prefix=getCompletionPrefix();if(!prefix)return;let insert=item;src.setRangeText(insert,prefix.start,prefix.end,"end");src.dispatchEvent(new Event("input"));completionPopup.style.display="none";src.focus();}
+languageMode.addEventListener("change", () => {
+  // Flush the previous mode before the delayed autosave can target the newly selected mode.
+  clearTimeout(autoSaveTimer);
+  // Keep the current unsaved work when moving between language modes.
+  languageDrafts[previousMode] = src.value;
+  languageFileNames[previousMode] = currentFileName;
+  persistDraft(previousMode, src.value);
+  const nextMode = languageMode.value;
+  let savedDraft = Object.prototype.hasOwnProperty.call(languageDrafts, nextMode)
+    ? languageDrafts[nextMode] : undefined;
+  if (savedDraft === undefined) {
+    try { savedDraft = localStorage.getItem(DRAFT_PREFIX + nextMode); } catch (_) {}
+  }
+  if (savedDraft !== null && savedDraft !== undefined) {
+    languageDrafts[nextMode] = savedDraft;
+    setEditorSource(savedDraft, nextMode);
+    statusEl.textContent = `${nextMode.toUpperCase()} draft restored`;
+  } else {
+    loadLanguageDemo(nextMode);
+  }
+  previousMode = nextMode;
+  updateRestoreButton();
+  renderCompletionPopup();
+  renderQuickTools();
+});
+src.addEventListener("input",renderCompletionPopup);
+src.addEventListener("click",renderCompletionPopup);
+
+const DEMO = `fn main():
+    name = "Supreme"
+    age = 13
+    print("Hello,", name)
+    print('Age:', age)
+    print(7 / 2, PI)
+
+    counter = 1
+    while counter <= 6:
+        if counter == 3:
+            print("three!")
+        elif counter > 4 and counter < 6:
+            print("big", counter)
+        else:
+            print(counter)
+        counter += 1
+        if counter == 6:
+            break
+
+    total = 0
+    n = 1
+    while n <= 10:
+        total += n
+        n = n + 1
+    print("sum 1..10 =", total)
+    msg = name
+    print(msg)
+`;
+
+const LANGUAGE_DEMOS = {
+  vyra: DEMO,
+  python: `name = "Supreme"
+print("Hello,", name)
+
+for count in range(1, 6):
+    if count == 3:
+        print("three!")
+    else:
+        print(count)
+
+print(12 ** 2)`,
+  c: `#include <stdio.h>
+
+int main(void) {
+    const char *name = "Supreme";
+    printf("Hello, %s!\n", name);
+
+    for (int count = 1; count <= 5; count++) {
+        if (count == 3) printf("three!\n");
+        else printf("%d\n", count);
+    }
+    return 0;
+}`
+};
+
+const FILE_INFO = {
+  vyra: {name: "main.vy", ext: ".vy"},
+  python: {name: "main.py", ext: ".py"},
+  c: {name: "main.c", ext: ".c"}
+};
+
+// Touch-friendly code insertion strip. It intentionally inserts templates only;
+// it never attempts to execute the selected language.
+const QUICK_INSERTS = {
+  vyra: [
+    ["print()", 'print("")', 2],
+    ["if", "if condition:\n    ", 0],
+    ["while", "while condition:\n    ", 0],
+    ["else", "else:\n    ", 0],
+    ["pass", "pass", 0],
+    ["# comment", "# ", 0]
+  ],
+  python: [
+    ["print()", 'print("")', 2],
+    ["if", "if condition:\n    ", 0],
+    ["for", "for item in range(5):\n    ", 0],
+    ["while", "while condition:\n    ", 0],
+    ["def", "def function_name():\n    ", 0],
+    ["# comment", "# ", 0]
+  ],
+  c: [
+    ["printf()", 'printf("");', 3],
+    ["if", "if (condition) {\n    \n}", 3],
+    ["for", "for (int i = 0; i < 5; i++) {\n    \n}", 3],
+    ["return", "return 0;", 0],
+    ["// comment", "// ", 0]
+  ]
+};
+function renderQuickTools() {
+  const host = $("mobileQuickTools");
+  if (!host) return;
+  host.replaceChildren();
+  (QUICK_INSERTS[languageMode.value] || QUICK_INSERTS.vyra).forEach(([label, text, caretBack]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.title = `Insert ${label}`;
+    button.addEventListener("click", () => {
+      const start = src.selectionStart, end = src.selectionEnd;
+      src.setRangeText(text, start, end, "end");
+      const caret = Math.max(start, start + text.length - caretBack);
+      src.setSelectionRange(caret, caret);
+      src.dispatchEvent(new Event("input"));
+      src.focus();
+    });
+    host.appendChild(button);
+  });
+}
+let lastC = "";
+let lastCompiledSource = null;
+
+function updateEditorMeta() {
+  const text = src.value;
+  const before = text.slice(0, src.selectionStart);
+  const lines = before.split("\n");
+  $("cursorInfo").textContent = `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
+  $("docInfo").textContent = `${text ? text.split("\n").length : 1} lines · ${text.length} characters`;
+  $("editorFileName").textContent = currentFileName;
+  updateLineNumbers();
+}
+
+function updateLineNumbers() {
+  const count = Math.max(1, src.value.split("\n").length);
+  $("lineNumbers").textContent = Array.from({length: count}, (_, i) => String(i + 1)).join("\n");
+  $("lineNumbers").scrollTop = src.scrollTop;
+}
+src.addEventListener("scroll", () => { $("lineNumbers").scrollTop = src.scrollTop; });
+
+function setEditorSource(code, mode = languageMode.value) {
+  languageMode.value = mode;
+  let storedName = null;
+  try { storedName = localStorage.getItem(FILE_NAME_PREFIX + mode); } catch (_) {}
+  currentFileName = languageFileNames[mode] || storedName || FILE_INFO[mode].name;
+  languageFileNames[mode] = currentFileName;
+  src.value = code;
+  src.dispatchEvent(new Event("input"));
+  completionPopup.style.display = "none";
+  updateEditorMeta();
+  updateRestoreButton();
+  showTab("out");
+  setMobileView("editor");
+}
+
+function updateRestoreButton() {
+  let hasDraft = Object.prototype.hasOwnProperty.call(languageDrafts, languageMode.value);
+  if (!hasDraft) {
+    try { hasDraft = localStorage.getItem(DRAFT_PREFIX + languageMode.value) !== null; }
+    catch (_) { /* storage can be disabled by browser settings */ }
+  }
+  $("restoreBtn").hidden = !hasDraft;
+}
+
+function persistDraft(mode, text) {
+  languageDrafts[mode] = text;
+  const defaultName = FILE_INFO[mode] ? FILE_INFO[mode].name : "main.vy";
+  const savedName = languageFileNames[mode] || (mode === languageMode.value ? currentFileName : defaultName);
+  try {
+    localStorage.setItem(DRAFT_PREFIX + mode, text);
+    localStorage.setItem(FILE_NAME_PREFIX + mode, savedName);
+  } catch (_) { /* Private browsing/quota restrictions should not break editing. */ }
+}
+function saveDraft() {
+  if (restoringDraft) return;
+  const mode = languageMode.value;
+  persistDraft(mode, src.value);
+  updateRestoreButton();
+  statusEl.textContent = "Saved locally";
+}
+
+function scheduleDraftSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(saveDraft, 350);
+}
+
+function loadLanguageDemo(mode = languageMode.value) {
+  clearTimeout(autoSaveTimer);
+  languageMode.value = FILE_INFO[mode] ? mode : "vyra";
+  const selected = languageMode.value;
+  currentFileName = FILE_INFO[selected].name;
+  languageFileNames[selected] = currentFileName;
+  try { localStorage.setItem(FILE_NAME_PREFIX + selected, currentFileName); } catch (_) {}
+  delete languageDrafts[selected];
+  try { localStorage.removeItem(DRAFT_PREFIX + selected); } catch (_) {}
+  src.value = LANGUAGE_DEMOS[selected] || DEMO;
+  completionPopup.style.display = "none";
+  lastC = "";
+  lastCompiledSource = null;
+  cout.textContent = "Compile a VYRA program to generate output.c.";
+  updateEditorMeta();
+  updateRestoreButton();
+  showTab("out");
+  setMobileView("editor");
+  statusEl.textContent = `${selected.toUpperCase()} demo loaded`;
+}
+
+// VYRA is intentionally the first-run default; saved drafts never replace its demo.
+renderQuickTools();
+src.value = DEMO;
+updateEditorMeta();
+
+const THEME_KEY = "vyra-ide-theme-v1";
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme === "auto") root.removeAttribute("data-theme");
+  else root.setAttribute("data-theme", theme);
+  $("themeBtn").textContent = `Theme: ${theme[0].toUpperCase()}${theme.slice(1)}`;
+  try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
+}
+let currentTheme = "auto";
+try {
+  const storedTheme = localStorage.getItem(THEME_KEY);
+  if (["auto", "dark", "light"].includes(storedTheme)) currentTheme = storedTheme;
+} catch (_) {}
+applyTheme(currentTheme);
+$("themeBtn").onclick = () => {
+  currentTheme = currentTheme === "auto" ? "dark" : currentTheme === "dark" ? "light" : "auto";
+  applyTheme(currentTheme);
+};
+
+// Persistent editor display preferences. Defaults stay readable on phones.
+const EDITOR_PREFS_KEY = "vyra-ide-editor-prefs-v1";
+const isNarrowScreen = () => typeof window.matchMedia === "function" && window.matchMedia("(max-width: 800px)").matches;
+let editorFontSize = isNarrowScreen() ? 15 : 13;
+let editorWordWrap = isNarrowScreen();
+try {
+  const prefs = JSON.parse(localStorage.getItem(EDITOR_PREFS_KEY) || "null");
+  if (prefs && Number.isFinite(prefs.fontSize)) editorFontSize = Math.min(20, Math.max(12, prefs.fontSize));
+  if (prefs && typeof prefs.wordWrap === "boolean") editorWordWrap = prefs.wordWrap;
+} catch (_) { /* Ignore malformed or unavailable preferences. */ }
+function applyEditorPreferences() {
+  src.style.fontSize = `${editorFontSize}px`;
+  $("lineNumbers").style.fontSize = `${Math.max(11, editorFontSize - 2)}px`;
+  src.style.whiteSpace = editorWordWrap ? "pre-wrap" : "pre";
+  src.style.overflowWrap = editorWordWrap ? "anywhere" : "normal";
+  src.style.overflowX = editorWordWrap ? "hidden" : "auto";
+  $("wrapBtn").textContent = `Wrap: ${editorWordWrap ? "On" : "Off"}`;
+  $("wrapBtn").setAttribute("aria-pressed", String(editorWordWrap));
+  try { localStorage.setItem(EDITOR_PREFS_KEY, JSON.stringify({fontSize:editorFontSize,wordWrap:editorWordWrap})); } catch (_) {}
+}
+$("fontDownBtn").onclick = () => { editorFontSize = Math.max(12, editorFontSize - 1); applyEditorPreferences(); };
+$("fontUpBtn").onclick = () => { editorFontSize = Math.min(20, editorFontSize + 1); applyEditorPreferences(); };
+$("wrapBtn").onclick = () => { editorWordWrap = !editorWordWrap; applyEditorPreferences(); };
+applyEditorPreferences();
+
+src.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && (e.key === "f" || e.key === "F")) {
+    e.preventDefault(); openFindPanel();
+  } else if (completionPopup.style.display === "block" && completionItems.length && e.key === "ArrowDown") {
+    e.preventDefault(); completionIndex = (completionIndex + 1) % completionItems.length;
+    [...completionPopup.children].forEach((el, i) => el.classList.toggle("active", i === completionIndex));
+  } else if (completionPopup.style.display === "block" && completionItems.length && e.key === "ArrowUp") {
+    e.preventDefault(); completionIndex = (completionIndex - 1 + completionItems.length) % completionItems.length;
+    [...completionPopup.children].forEach((el, i) => el.classList.toggle("active", i === completionIndex));
+  } else if (completionPopup.style.display === "block" && completionItems.length && e.key === "Enter" && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault(); acceptCompletion(completionItems[completionIndex]);
+  } else if (e.key === "Escape") {
+    completionPopup.style.display = "none";
+  } else if (e.key === "Tab") {
+    e.preventDefault();
+    changeIndent(e.shiftKey);
+    src.dispatchEvent(new Event("input"));
+  } else if (e.key === "Backspace" && src.selectionStart === src.selectionEnd) {
+    const pos = src.selectionStart, lineStart = src.value.lastIndexOf("\n", pos - 1) + 1;
+    const before = src.value.slice(lineStart, pos);
+    if (before.length >= 4 && before.slice(-4) === "    " && /^ *$/.test(before)) {
+      e.preventDefault(); src.setRangeText("", pos - 4, pos, "end"); src.dispatchEvent(new Event("input"));
+    }
+  } else if (e.key === "Enter" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    const pos = src.selectionStart, lineStart = src.value.lastIndexOf("\n", pos - 1) + 1;
+    const lineBefore = src.value.slice(lineStart, pos);
+    let indent = (lineBefore.match(/^\s*/) || [""])[0];
+    if (languageMode.value === "c" && lineBefore.trimEnd().endsWith("}") && indent.length >= 4) {
+      indent = indent.slice(0, -4);
+    }
+    const opensBlock = languageMode.value === "c"
+      ? /\{\s*$/.test(lineBefore.trimEnd())
+      : /:\s*$/.test(lineBefore.trimEnd());
+    const extra = opensBlock ? "    " : "";
+    src.setRangeText("\n" + indent + extra, src.selectionStart, src.selectionEnd, "end");
+    src.dispatchEvent(new Event("input"));
+  } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault(); go(true);
+  } else if ((e.key === "s" || e.key === "S") && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault(); downloadCurrentFile();
+  } else if ((e.key === "l" || e.key === "L") && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault(); loadLanguageDemo(languageMode.value);
+  } else if (e.key === "/" && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault(); toggleLineComment();
+  }
+});
+
+function changeIndent(outdent) {
+  const start = src.selectionStart, end = src.selectionEnd, value = src.value;
+  const first = value.lastIndexOf("\n", start - 1) + 1;
+  if (start === end) {
+    const lineEnd = value.indexOf("\n", start) < 0 ? value.length : value.indexOf("\n", start);
+    const line = value.slice(first, lineEnd);
+    if (!outdent) {
+      src.setRangeText("    ", first, first, "end");
+      src.setSelectionRange(start + 4, start + 4);
+      return;
+    }
+    const remove = line.startsWith("    ") ? 4 : line.startsWith("\t") ? 1 : 0;
+    if (remove) {
+      src.setRangeText("", first, first + remove, "end");
+      const next = start >= first + remove ? start - remove : first;
+      src.setSelectionRange(next, next);
+    }
+    return;
+  }
+  // When the selection ends at the start of the next line, do not indent that next line.
+  const endProbe = Math.max(start, end - 1);
+  let last = value.indexOf("\n", endProbe);
+  if (last < 0) last = value.length;
+  const block = value.slice(first, last).split("\n");
+  const changed = block.map(line => {
+    if (!outdent) return "    " + line;
+    if (line.startsWith("    ")) return line.slice(4);
+    if (line.startsWith("\t")) return line.slice(1);
+    return line;
+  }).join("\n");
+  src.setRangeText(changed, first, last, "select");
+}
+
+function toggleLineComment() {
+  const prefix = languageMode.value === "c" ? "//" : "#";
+  const start = src.selectionStart, end = src.selectionEnd;
+  const first = src.value.lastIndexOf("\n", start - 1) + 1;
+  const endProbe = start === end ? end : Math.max(start, end - 1);
+  let last = src.value.indexOf("\n", endProbe);
+  if (last < 0) last = src.value.length;
+  const block = src.value.slice(first, last);
+  const lines = block.split("\n");
+  const nonBlank = lines.filter(line => line.trim());
+  const remove = nonBlank.length && nonBlank.every(line => line.trimStart().startsWith(prefix));
+  const changed = lines.map(line => {
+    if (!line.trim()) return line;
+    if (remove) return line.replace(new RegExp("^(\\s*)" + (prefix === "#" ? "#\\s?" : "//\\s?")), "$1");
+    const ws = (line.match(/^\s*/) || [""])[0];
+    return ws + prefix + " " + line.slice(ws.length);
+  }).join("\n");
+  src.setRangeText(changed, first, last, "select");
+  src.dispatchEvent(new Event("input"));
+}
+
+src.addEventListener("keyup", updateEditorMeta);
+src.addEventListener("click", updateEditorMeta);
+src.addEventListener("select", updateEditorMeta);
+
+function openFindPanel() {
+  const panel = $("findPanel");
+  panel.hidden = false;
+  $("findQuery").focus();
+  $("findQuery").select();
+  refreshFindCount();
+}
+function closeFindPanel() {
+  $("findPanel").hidden = true;
+  src.focus();
+}
+function findMatches() {
+  const query = $("findQuery").value;
+  if (!query) return [];
+  const haystack = src.value.toLocaleLowerCase();
+  const needle = query.toLocaleLowerCase();
+  const matches = [];
+  let at = 0;
+  while ((at = haystack.indexOf(needle, at)) !== -1) {
+    matches.push(at);
+    at += Math.max(1, needle.length);
+  }
+  return matches;
+}
+function refreshFindCount() {
+  const matches = findMatches();
+  $("findCount").textContent = matches.length ? `${matches.length} match${matches.length === 1 ? "" : "es"}` : "No matches";
+  return matches;
+}
+function findNext() {
+  const query = $("findQuery").value;
+  if (!query) { statusEl.textContent = "Enter text to find"; return; }
+  const matches = refreshFindCount();
+  if (!matches.length) return;
+  const current = src.selectionEnd;
+  const next = matches.find(index => index >= current) ?? matches[0];
+  src.focus();
+  src.setSelectionRange(next, next + query.length);
+  updateEditorMeta();
+}
+function replaceCurrent() {
+  const query = $("findQuery").value;
+  if (!query) return;
+  if (src.value.slice(src.selectionStart, src.selectionEnd).toLocaleLowerCase() === query.toLocaleLowerCase()) {
+    src.setRangeText($("replaceText").value, src.selectionStart, src.selectionEnd, "end");
+    src.dispatchEvent(new Event("input"));
+  }
+  findNext();
+}
+function replaceEveryMatch() {
+  const query = $("findQuery").value;
+  if (!query) return;
+  const before = src.value;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const changed = before.replace(new RegExp(escaped, "gi"), () => $("replaceText").value);
+  if (changed !== before) {
+    src.value = changed;
+    src.dispatchEvent(new Event("input"));
+    statusEl.textContent = "Replaced all matches";
+  }
+  refreshFindCount();
+}
+$("findBtn").onclick = openFindPanel;
+$("findCloseBtn").onclick = closeFindPanel;
+$("findNextBtn").onclick = findNext;
+$("replaceOneBtn").onclick = replaceCurrent;
+$("replaceAllBtn").onclick = replaceEveryMatch;
+$("findQuery").addEventListener("input", refreshFindCount);
+$("findQuery").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); findNext(); } if (e.key === "Escape") closeFindPanel(); });
+
+function setMobileView(name) {
+  const view = name === "output" ? "output" : "editor";
+  document.querySelector("main").dataset.mobileView = view;
+  $("mobileEditorBtn").classList.toggle("active", view === "editor");
+  $("mobileOutputBtn").classList.toggle("active", view === "output");
+  $("mobileEditorBtn").setAttribute("aria-selected", String(view === "editor"));
+  $("mobileOutputBtn").setAttribute("aria-selected", String(view === "output"));
+  const dockEditor = $("dockEditorBtn"), dockOutput = $("dockOutputBtn");
+  dockEditor.classList.toggle("active", view === "editor");
+  dockOutput.classList.toggle("active", view === "output");
+  dockEditor.setAttribute("aria-current", view === "editor" ? "page" : "false");
+  dockOutput.setAttribute("aria-current", view === "output" ? "page" : "false");
+}
+$("mobileEditorBtn").onclick = () => setMobileView("editor");
+$("mobileOutputBtn").onclick = () => setMobileView("output");
+$("dockEditorBtn").onclick = () => setMobileView("editor");
+$("dockRunBtn").onclick = () => go(true);
+$("dockOutputBtn").onclick = () => { showTab("out"); setMobileView("output"); };
+$("dockGuideBtn").onclick = () => { window.location.href = "how-to.html"; };
+
+function showTab(name) {
+  const isOut = name === "out", isC = name === "c";
+  out.classList.toggle("hidden", !isOut);
+  cout.classList.toggle("hidden", !isC);
+  $("tabOut").classList.toggle("active", isOut);
+  $("tabC").classList.toggle("active", isC);
+  $("tabOut").setAttribute("aria-selected", String(isOut));
+  $("tabC").setAttribute("aria-selected", String(isC));
+  setMobileView("output");
+}
+$("tabOut").onclick = () => showTab("out");
+$("tabC").onclick = () => {
+  if (languageMode.value !== "vyra") {
+    out.textContent = "output.c is generated from VYRA source. Switch to VYRA mode to compile C output.";
+    out.classList.remove("error");
+    showTab("out");
+    statusEl.textContent = "VYRA mode required";
+  } else if (lastCompiledSource !== src.value) {
+    go(false);
+  } else showTab("c");
+};
+
+
+function go(andRun) {
+  const mode = $("languageMode").value;
+  if (mode !== "vyra") {
+    const detail = mode === "python"
+      ? "Python code editing and autocomplete are available, but a Python runtime is not bundled in this offline IDE."
+      : "C code editing and autocomplete are available, but compiling/running C requires a native C compiler such as GCC or Clang.";
+    out.textContent = detail + "\n\nYour code is safe: it has not been sent to the VYRA compiler.";
+    out.classList.remove("error");
+    showTab("out");
+    statusEl.textContent = `${mode.toUpperCase()} runtime unavailable`;
+    return;
+  }
+  const r = VYRA.compile(src.value);
+
+  lastC = r.c;
+  lastCompiledSource = r.ok ? src.value : null;
+  cout.textContent = r.c || "(no C code yet, fix the errors first)";
+
+  if (!r.ok) {
+    out.textContent = r.errors.join("\n") +
+      `\n\nCompilation failed: ${r.errors.length} error(s).`;
+    out.classList.add("error");
+    showTab("out");
+    statusEl.textContent = "Failed";
+    return;
+  }
+
+  if (!andRun) {
+    out.textContent = "Compiled OK -> output.c";
+    out.classList.remove("error");
+    showTab("c");
+    statusEl.textContent = "Compiled";
+    return;
+  }
+
+  const res = VYRA.run(r.js);
+  out.textContent = (res.output + (res.error ? (res.output ? "\n" : "") + res.error : "")) || "(no output)";
+  out.classList.toggle("error", !!res.error);
+  showTab("out");
+  statusEl.textContent = res.error ? "Stopped" : "Done";
+}
+
+$("compileBtn").onclick = () => go(false);
+$("runBtn").onclick = () => go(true);
+src.addEventListener("input", () => {
+  updateEditorMeta();
+  if (!$("findPanel").hidden) refreshFindCount();
+  scheduleDraftSave();
+});
+
+function download(name, text) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function downloadCurrentFile() {
+  const info = FILE_INFO[languageMode.value] || FILE_INFO.vyra;
+  const name = currentFileName || info.name;
+  download(name, src.value);
+  statusEl.textContent = `Downloaded ${name}`;
+}
+
+function makeProjectBackup() {
+  const modes = Object.keys(FILE_INFO);
+  const drafts = {}, fileNames = {};
+  modes.forEach(mode => {
+    let draft = languageDrafts[mode];
+    if (mode === languageMode.value) draft = src.value;
+    if (draft === undefined) {
+      try { draft = localStorage.getItem(DRAFT_PREFIX + mode); } catch (_) {}
+    }
+    if (draft !== null && draft !== undefined) drafts[mode] = draft;
+    let name = languageFileNames[mode];
+    if (mode === languageMode.value) name = currentFileName;
+    if (!name) { try { name = localStorage.getItem(FILE_NAME_PREFIX + mode); } catch (_) {} }
+    fileNames[mode] = name || FILE_INFO[mode].name;
+  });
+  let preferences = null;
+  try { preferences = JSON.parse(localStorage.getItem(EDITOR_PREFS_KEY) || "null"); } catch (_) {}
+  return { format: "vyra-ide-backup", version: 1, createdAt: new Date().toISOString(), activeLanguage: languageMode.value, drafts, fileNames, theme: currentTheme, editorPreferences: preferences };
+}
+function exportProjectBackup() {
+  const data = makeProjectBackup();
+  download("vyra-project-backup.json", JSON.stringify(data, null, 2));
+  statusEl.textContent = "Project backup exported";
+}
+function importProjectBackup(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { statusEl.textContent = "Backup too large (maximum 5 MB)"; return; }
+  return file.text().then(raw => {
+    const backup = JSON.parse(raw);
+    if (!backup || backup.format !== "vyra-ide-backup" || backup.version !== 1 || !backup.drafts || typeof backup.drafts !== "object") {
+      throw new Error("This is not a supported VYRA IDE backup.");
+    }
+    const modes = Object.keys(FILE_INFO);
+    let restored = 0;
+    modes.forEach(mode => {
+      const draft = backup.drafts[mode];
+      if (typeof draft !== "string" || draft.length > 2 * 1024 * 1024) return;
+      const supplied = backup.fileNames && typeof backup.fileNames[mode] === "string" ? backup.fileNames[mode] : FILE_INFO[mode].name;
+      const safeName = supplied.split(/[\\/]/).pop().replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 120);
+      const filename = safeName.toLowerCase().endsWith(FILE_INFO[mode].ext) ? safeName : FILE_INFO[mode].name;
+      languageFileNames[mode] = filename;
+      persistDraft(mode, draft);
+      restored++;
+    });
+    if (!restored) throw new Error("The backup did not contain any valid language drafts.");
+    if (["auto", "dark", "light"].includes(backup.theme)) { currentTheme = backup.theme; applyTheme(currentTheme); }
+    const prefs = backup.editorPreferences;
+    if (prefs && Number.isFinite(prefs.fontSize)) editorFontSize = Math.min(20, Math.max(12, prefs.fontSize));
+    if (prefs && typeof prefs.wordWrap === "boolean") editorWordWrap = prefs.wordWrap;
+    applyEditorPreferences();
+    const active = modes.includes(backup.activeLanguage) ? backup.activeLanguage : languageMode.value;
+    if (typeof backup.drafts[active] === "string") {
+      languageMode.value = active; previousMode = active; currentFileName = languageFileNames[active] || FILE_INFO[active].name;
+      setEditorSource(backup.drafts[active], active);
+    }
+    updateRestoreButton();
+    statusEl.textContent = `Backup restored · ${restored} draft(s)`;
+  }).catch(error => {
+    statusEl.textContent = `Backup not restored: ${error.message || "invalid file"}`;
+  });
+}
+
+$("exportBackupBtn").onclick = exportProjectBackup;
+$("importBackupBtn").onclick = () => $("backupFile").click();
+$("backupFile").onchange = event => {
+  importProjectBackup(event.target.files && event.target.files[0]);
+  event.target.value = "";
+};
+
+$("demoBtn").onclick = () => loadLanguageDemo(languageMode.value);
+$("resetBtn").onclick = () => {
+  const demo = LANGUAGE_DEMOS[languageMode.value] || DEMO;
+  if (src.value !== demo && !confirm("Reset this editor to the built-in demo? Your current draft will be replaced.")) return;
+  loadLanguageDemo(languageMode.value);
+};
+$("restoreBtn").onclick = () => {
+  const mode = languageMode.value;
+  let draft = languageDrafts[mode];
+  if (draft === undefined) {
+    try { draft = localStorage.getItem(DRAFT_PREFIX + mode); } catch (_) {}
+  }
+  if (draft !== null && draft !== undefined) {
+    restoringDraft = true;
+    src.value = draft;
+    restoringDraft = false;
+    languageDrafts[mode] = draft;
+    let storedName = null;
+    try { storedName = localStorage.getItem(FILE_NAME_PREFIX + mode); } catch (_) {}
+    currentFileName = languageFileNames[mode] || storedName || FILE_INFO[mode].name;
+    languageFileNames[mode] = currentFileName;
+    updateEditorMeta();
+    statusEl.textContent = "Draft restored";
+    showTab("out");
+    setMobileView("editor");
+  }
+};
+$("clearOutputBtn").onclick = () => {
+  out.textContent = "Output cleared. Press Run to execute your VYRA program.";
+  out.classList.remove("error");
+  statusEl.textContent = "Output cleared";
+};
+$("saveBtn").onclick = downloadCurrentFile;
+$("copyBtn").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(src.value);
+    statusEl.textContent = "Code copied";
+  } catch (error) {
+    src.focus(); src.select();
+    statusEl.textContent = "Select the code and copy it";
+  }
+};
+$("downloadBtn").onclick = () => {
+  if (languageMode.value !== "vyra") {
+    statusEl.textContent = "output.c is generated by VYRA mode";
+    return;
+  }
+  if (lastCompiledSource !== src.value) go(false);
+  if (lastC && lastCompiledSource === src.value) download("output.c", lastC);
+};
+$("openBtn").onclick = () => $("file").click();
+$("file").onchange = async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  if (f.size > 2 * 1024 * 1024) {
+    statusEl.textContent = "File too large (maximum 2 MB)";
+    e.target.value = "";
+    return;
+  }
+  const ext = f.name.toLowerCase().split(".").pop();
+  const extModes = {vy: "vyra", py: "python", c: "c", h: "c"};
+  const detectedMode = extModes[ext];
+  if (!detectedMode) {
+    statusEl.textContent = "Unsupported file type. Open .vy, .py, or .c files.";
+    e.target.value = "";
+    return;
+  }
+  try {
+    // Preserve the current editor draft if opening a file switches language modes.
+    clearTimeout(autoSaveTimer);
+    if (languageMode.value !== detectedMode) {
+      languageDrafts[languageMode.value] = src.value;
+      languageFileNames[languageMode.value] = currentFileName;
+      persistDraft(languageMode.value, src.value);
+    }
+    const content = await f.text();
+    languageMode.value = detectedMode;
+    previousMode = detectedMode;
+    currentFileName = f.name;
+    languageFileNames[detectedMode] = f.name;
+    lastC = "";
+    lastCompiledSource = null;
+    cout.textContent = "Compile a VYRA program to generate output.c.";
+    src.value = content;
+    languageDrafts[detectedMode] = content;
+    updateEditorMeta();
+    updateRestoreButton();
+    showTab("out");
+    setMobileView("editor");
+    statusEl.textContent = `Opened ${f.name}`;
+    scheduleDraftSave();
+  } catch (error) {
+    statusEl.textContent = `Could not open file: ${error.message}`;
+  } finally {
+    e.target.value = "";
+  }
+};
+
+// Flush the most recent edit before the page is closed or navigated away.
+window.addEventListener("pagehide", () => {
+  clearTimeout(autoSaveTimer);
+  if (!restoringDraft) persistDraft(languageMode.value, src.value);
+});
+window.addEventListener("beforeunload", () => {
+  clearTimeout(autoSaveTimer);
+  if (!restoringDraft) persistDraft(languageMode.value, src.value);
+});
+
+["dragenter", "dragover"].forEach(type => src.addEventListener(type, event => {
+  event.preventDefault();
+  src.classList.add("dragOver");
+}));
+["dragleave", "drop"].forEach(type => src.addEventListener(type, event => {
+  event.preventDefault();
+  src.classList.remove("dragOver");
+}));
+src.addEventListener("drop", event => {
+  const dropped = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+  if (!dropped) return;
+  const transfer = new DataTransfer();
+  transfer.items.add(dropped);
+  $("file").files = transfer.files;
+  $("file").dispatchEvent(new Event("change"));
+});
+
+// A draft is recoverable after refresh, but the first screen remains the VYRA demo.
+updateRestoreButton();
+
+// Install prompt is supported by Chromium-based browsers; iOS users can use
+// Safari's Share menu. Offline shell caching is enabled only on secure origins.
+let pendingInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", event => {
+  event.preventDefault();
+  pendingInstallPrompt = event;
+  $("installBtn").hidden = false;
+});
+$("installBtn").onclick = async () => {
+  if (!pendingInstallPrompt) {
+    statusEl.textContent = "Install from your browser menu · on iPhone use Share → Add to Home Screen";
+    return;
+  }
+  pendingInstallPrompt.prompt();
+  await pendingInstallPrompt.userChoice;
+  pendingInstallPrompt = null;
+  $("installBtn").hidden = true;
+};
+window.addEventListener("appinstalled", () => {
+  $("installBtn").hidden = true;
+  statusEl.textContent = "VYRA installed";
+});
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+
+// Give new visitors a working VYRA example and its output immediately.
+showTab("out");
+go(true);
+setMobileView("editor");
+</script>
+</body>
+</html>
